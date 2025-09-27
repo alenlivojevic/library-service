@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: LibraryService
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mydb   # ime tvoje baze
+    username: admin                              # korisnik PostgreSQL baze
+    password: admin123                            # lozinka korisnika
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update   # opcije: none | validate | update | create | create-drop
+    show-sql: true       # prikazuje SQL u konzoli
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: library
+server:
+  port: 8080
+  servlet:
+    context-path: /library
+logging:
+  level:
+    root: INFO
