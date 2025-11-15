@@ -7,18 +7,24 @@ import com.FourSolutions.library.repository.BookRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 public class LibraryService {
     BookRepository bookRepository;
+
+    @Autowired
+    private ObjectMapper mapper;
+
 
     @Transactional
     public ResponseEntity<String> addBook(NewBookDto newBookDto) {
@@ -38,24 +44,16 @@ public class LibraryService {
         return ResponseEntity.ok("Knjiga uspjesno dodana!");
     }
 
-    public ResponseEntity<String> search(String query) {
+    public ResponseEntity<List<Book>> search(String query) {
         List<Book> bookList;
         if(query == null){
             throw new LibraryException("Parametar pretrage nije definiran!");
         } else {
             bookList = new ArrayList<>(searchByAuthorOrTitle(query));
         }
-
-        ObjectMapper mapper = new ObjectMapper();
-        String response;
-        try{
-            response = mapper.writeValueAsString(bookList);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
         return ResponseEntity.ok()
                 .header("Content-Type", "application/json")
-                .body(response);
+                .body(bookList);
     }
 
     private List<Book> searchByAuthorOrTitle(String query) {
@@ -63,11 +61,13 @@ public class LibraryService {
     }
 
     @Transactional
-    public ResponseEntity<String> borrow(Integer id, String person) {
+    public ResponseEntity<String> borrow(Integer id, String person, String date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
         Book book = bookRepository.findById(id.longValue())
                 .orElseThrow(() -> new LibraryException("Knjiga ne postoji u bazi!"));
         book.setBorrowedBy(person);
         book.setAvailability(false);
+        book.setDate(LocalDate.parse(date, formatter));
         bookRepository.save(book);
         return ResponseEntity.ok("Knjiga uspjesno posudena!");
     }
@@ -77,6 +77,7 @@ public class LibraryService {
         Book book = bookRepository.findById(id.longValue())
                 .orElseThrow(() -> new LibraryException("Knjiga ne postoji u bazi!"));
         book.setBorrowedBy("N/A");
+        book.setDate(null);
         book.setAvailability(true);
         bookRepository.save(book);
         return ResponseEntity.ok("Knjiga uspjesno vracena!");
@@ -91,7 +92,6 @@ public class LibraryService {
     public ResponseEntity<String> searchId(Long id) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new LibraryException("Knjiga ne postoji u bazi!"));
-        ObjectMapper mapper = new ObjectMapper();
         String response;
         try{
             response = mapper.writeValueAsString(book);

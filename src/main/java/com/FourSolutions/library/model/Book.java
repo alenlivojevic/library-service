@@ -1,8 +1,11 @@
 package com.FourSolutions.library.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -24,4 +27,8 @@ public class Book {
 
     @Column(name = "borrowed_by")
     private String borrowedBy;
+
+    @Column(name = "date")
+    @JsonFormat(pattern = "dd.MM.yyyy")
+    private LocalDate date;
 }

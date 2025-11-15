@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.List;
+
 @AllArgsConstructor
 @CrossOrigin(origins = "*")
 @RestController
@@ -30,8 +33,8 @@ public class LibraryController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<String> search(@RequestParam(required = false) String query){
-        if(query == null || query.length() < 2) return ResponseEntity.ok("");
+    public ResponseEntity<List<Book>> search(@RequestParam(required = false) String query){
+        if(query == null || query.length() < 2) return ResponseEntity.ok(Collections.emptyList());
         return libraryService.search(query);
     }
 
@@ -42,8 +45,9 @@ public class LibraryController {
 
     @GetMapping("/borrow")
     public ResponseEntity<String> borrow(@RequestParam Integer id,
-                                         @RequestParam String person){
-        return libraryService.borrow(id, person);
+                                         @RequestParam String person,
+                                         @RequestParam String date){
+        return libraryService.borrow(id, person, date);
     }
 
     @GetMapping("/returnBook")
